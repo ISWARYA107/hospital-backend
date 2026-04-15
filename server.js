@@ -661,6 +661,80 @@ app.get('/api/available-slots/:doctorId/:date', (req, res) => {
   });
 });
 
+
+
+
+
+// ============================================
+// GET ALL OUTPATIENTS (OP) RECORDS
+// ============================================
+app.get('/api/outpatients', (req, res) => {
+  const query = `
+    SELECT op.*, u.name as patient_name, a.appointment_date, a.appointment_time
+    FROM outpatients op
+    JOIN appointments a ON op.appointment_id = a.id
+    JOIN patients p ON a.patient_id = p.id
+    JOIN users u ON p.user_id = u.id
+    ORDER BY a.appointment_date DESC
+  `;
+  db.query(query, (err, results) => {
+    if (err) {
+      res.status(500).json([]);
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+// ============================================
+// GET ALL INPATIENTS (IP) RECORDS
+// ============================================
+app.get('/api/inpatients', (req, res) => {
+  const query = `
+    SELECT ip.*, u.name as patient_name, r.room_number, r.room_type,
+           a.appointment_date, d2.name as doctor_name
+    FROM inpatients ip
+    JOIN appointments a ON ip.appointment_id = a.id
+    JOIN patients p ON a.patient_id = p.id
+    JOIN users u ON p.user_id = u.id
+    JOIN rooms r ON ip.room_id = r.id
+    JOIN doctors d ON ip.doctor_id = d.id
+    JOIN users d2 ON d.user_id = d2.id
+    ORDER BY ip.admission_date DESC
+  `;
+  db.query(query, (err, results) => {
+    if (err) {
+      res.status(500).json([]);
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+// ============================================
+// SEARCH PATIENTS
+// ============================================
+app.get('/api/search-patients/:keyword', (req, res) => {
+  const keyword = `%${req.params.keyword}%`;
+  const query = `
+    SELECT u.id, u.name, u.email, p.phone, p.blood_group,
+           (SELECT COUNT(*) FROM appointments a WHERE a.patient_id = p.id) as total_visits
+    FROM users u
+    JOIN patients p ON u.id = p.user_id
+    WHERE u.name LIKE ? OR u.email LIKE ? OR p.phone LIKE ?
+    LIMIT 50
+  `;
+  db.query(query, [keyword, keyword, keyword], (err, results) => {
+    if (err) {
+      res.status(500).json([]);
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+
+
 // Start server
 const PORT = 5001;
 app.listen(PORT, () => {
