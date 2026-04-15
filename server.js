@@ -733,7 +733,32 @@ app.get('/api/search-patients/:keyword', (req, res) => {
   });
 });
 
-
+// GET ADMITTED PATIENTS FOR SPECIFIC DOCTOR
+// app.get('/api/admitted-patients/:doctorId', (req, res) => {
+//   const { doctorId } = req.params;
+  
+//   const query = `
+//     SELECT ip.*, u.name as patient_name, r.room_number, r.room_type, ip.doctor_id
+//     FROM inpatients ip
+//     JOIN appointments a ON ip.appointment_id = a.id
+//     JOIN patients p ON a.patient_id = p.id
+//     JOIN users u ON p.user_id = u.id
+//     JOIN rooms r ON ip.room_id = r.id
+//     WHERE ip.discharge_date IS NULL 
+//       AND ip.status = "admitted" 
+//       AND ip.doctor_id = ?
+//     ORDER BY ip.admission_date DESC
+//   `;
+  
+//   db.query(query, [doctorId], (err, results) => {
+//     if (err) {
+//       console.error('Error loading admitted patients:', err);
+//       res.status(500).json([]);
+//     } else {
+//       res.json(results);
+//     }
+//   });
+// });
 
 // Start server
 const PORT = 5001;
